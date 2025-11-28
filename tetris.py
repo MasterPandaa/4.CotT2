@@ -1,7 +1,8 @@
-import pygame
 import random
 import sys
 from typing import Dict, List, Tuple
+
+import pygame
 
 # -----------------------------
 # Konfigurasi Game
@@ -164,20 +165,22 @@ T = [
 
 SHAPES = [S, Z, I, O, J, L, T]
 SHAPE_COLORS = [
-    (80, 220, 100),   # S - hijau
-    (220, 80, 100),   # Z - merah
-    (80, 200, 220),   # I - cyan
-    (220, 220, 80),   # O - kuning
-    (80, 100, 220),   # J - biru
-    (220, 140, 80),   # L - oranye
-    (200, 80, 220),   # T - ungu
+    (80, 220, 100),  # S - hijau
+    (220, 80, 100),  # Z - merah
+    (80, 200, 220),  # I - cyan
+    (220, 220, 80),  # O - kuning
+    (80, 100, 220),  # J - biru
+    (220, 140, 80),  # L - oranye
+    (200, 80, 220),  # T - ungu
 ]
 
 
 class Piece:
     """Class bidak yang sedang jatuh."""
 
-    def __init__(self, x: int, y: int, shape: List[List[str]], color: Tuple[int, int, int]):
+    def __init__(
+        self, x: int, y: int, shape: List[List[str]], color: Tuple[int, int, int]
+    ):
         # posisi grid
         self.x = x
         self.y = y
@@ -194,6 +197,7 @@ class Piece:
 # Utilitas Grid
 # -----------------------------
 
+
 def create_grid(locked_positions: Dict[Tuple[int, int], Tuple[int, int, int]]):
     grid = [[BLACK for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
     for (x, y), color in locked_positions.items():
@@ -208,7 +212,7 @@ def convert_shape_format(piece: Piece) -> List[Tuple[int, int]]:
     template = piece.image()
     for i, line in enumerate(template):
         for j, char in enumerate(line):
-            if char == '0':
+            if char == "0":
                 positions.append((piece.x + j - 1, piece.y + i - 2))
                 # offset (-1, -2) untuk menyelaraskan spawn & rotasi standar 4x4
     return positions
@@ -233,7 +237,7 @@ def valid_space(piece: Piece, grid: List[List[Tuple[int, int, int]]]) -> bool:
 
 
 def out_of_bounds(piece: Piece) -> bool:
-    for (x, y) in convert_shape_format(piece):
+    for x, y in convert_shape_format(piece):
         if x < 0 or x >= GRID_WIDTH or y >= GRID_HEIGHT:
             return True
     return False
@@ -241,7 +245,7 @@ def out_of_bounds(piece: Piece) -> bool:
 
 def check_lost(locked_positions: Dict[Tuple[int, int], Tuple[int, int, int]]):
     # Kalah jika ada blok terkunci di atas grid (y < 0) atau pada spawn baris awal
-    for (_, y) in locked_positions.keys():
+    for _, y in locked_positions.keys():
         if y < 1:
             return True
     return False
@@ -250,6 +254,7 @@ def check_lost(locked_positions: Dict[Tuple[int, int], Tuple[int, int, int]]):
 # -----------------------------
 # Pembersihan Baris
 # -----------------------------
+
 
 def clear_rows(grid, locked: Dict[Tuple[int, int], Tuple[int, int, int]]) -> int:
     """Menghapus baris penuh dari bawah ke atas dan menggeser blok di atasnya turun.
@@ -265,7 +270,7 @@ def clear_rows(grid, locked: Dict[Tuple[int, int], Tuple[int, int, int]]) -> int
                 except KeyError:
                     pass
             # Geser blok di atasnya turun
-            for (x0, y0) in sorted(list(locked.keys()), key=lambda p: p[1]):
+            for x0, y0 in sorted(list(locked.keys()), key=lambda p: p[1]):
                 if y0 < y:
                     color = locked[(x0, y0)]
                     del locked[(x0, y0)]
@@ -276,6 +281,7 @@ def clear_rows(grid, locked: Dict[Tuple[int, int], Tuple[int, int, int]]) -> int
 # -----------------------------
 # Gambar & UI
 # -----------------------------
+
 
 def draw_grid(surface, grid):
     # Latar belakang area permainan
@@ -290,10 +296,14 @@ def draw_grid(surface, grid):
             pygame.draw.rect(surface, (40, 40, 40), rect, 1)  # garis grid tipis
 
 
-def draw_side_panel(surface, next_piece: Piece, score: int, level: int, lines: int, font):
+def draw_side_panel(
+    surface, next_piece: Piece, score: int, level: int, lines: int, font
+):
     panel_x = PLAY_WIDTH
     # Latar panel
-    pygame.draw.rect(surface, (20, 20, 20), (panel_x, 0, SIDE_PANEL_WIDTH, WINDOW_HEIGHT))
+    pygame.draw.rect(
+        surface, (20, 20, 20), (panel_x, 0, SIDE_PANEL_WIDTH, WINDOW_HEIGHT)
+    )
 
     # Judul
     title_text = font.render("TETRIS", True, WHITE)
@@ -316,15 +326,19 @@ def draw_side_panel(surface, next_piece: Piece, score: int, level: int, lines: i
     start_y = 210
     for i, row in enumerate(template):
         for j, char in enumerate(row):
-            if char == '0':
+            if char == "0":
                 pygame.draw.rect(
                     surface,
                     next_piece.color,
-                    (start_x + j * (BLOCK_SIZE // 1.5), start_y + i * (BLOCK_SIZE // 1.5),
-                     int(BLOCK_SIZE // 1.5), int(BLOCK_SIZE // 1.5)),
+                    (
+                        start_x + j * (BLOCK_SIZE // 1.5),
+                        start_y + i * (BLOCK_SIZE // 1.5),
+                        int(BLOCK_SIZE // 1.5),
+                        int(BLOCK_SIZE // 1.5),
+                    ),
                 )
 
-    controls_font = pygame.font.SysFont('consolas', 16)
+    controls_font = pygame.font.SysFont("consolas", 16)
     controls = [
         "Controls:",
         "Panah Kiri/Kanan: Geser",
@@ -352,6 +366,7 @@ def draw_window(surface, grid, next_piece, score, level, lines, font):
 # Mekanika Game
 # -----------------------------
 
+
 def get_shape() -> Piece:
     idx = random.randrange(len(SHAPES))
     shape = SHAPES[idx]
@@ -377,7 +392,7 @@ def hard_drop(current_piece: Piece, grid, locked):
 
 
 def add_to_locked(piece: Piece, locked):
-    for (x, y) in convert_shape_format(piece):
+    for x, y in convert_shape_format(piece):
         if y >= 0:
             locked[(x, y)] = piece.color
 
@@ -386,13 +401,14 @@ def add_to_locked(piece: Piece, locked):
 # Main Loop
 # -----------------------------
 
+
 def main():
     pygame.init()
     pygame.display.set_caption("Tetris - Pygame")
     win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
 
-    font = pygame.font.SysFont('consolas', 24)
+    font = pygame.font.SysFont("consolas", 24)
 
     locked_positions: Dict[Tuple[int, int], Tuple[int, int, int]] = {}
     grid = create_grid(locked_positions)
@@ -447,7 +463,9 @@ def main():
                 elif event.key == pygame.K_UP:
                     # rotasi searah jarum jam
                     prev_rot = current_piece.rotation
-                    current_piece.rotation = (current_piece.rotation + 1) % len(current_piece.shape)
+                    current_piece.rotation = (current_piece.rotation + 1) % len(
+                        current_piece.shape
+                    )
                     if not valid_space(current_piece, grid):
                         # Sederhana: coba nudge ke kiri/kanan satu kali (wall kick sederhana)
                         current_piece.x += 1
@@ -465,7 +483,10 @@ def main():
             # Render state pause
             draw_window(win, grid, next_piece, score, level, lines_cleared_total, font)
             pause_txt = font.render("PAUSE", True, WHITE)
-            win.blit(pause_txt, (PLAY_WIDTH // 2 - pause_txt.get_width() // 2, PLAY_HEIGHT // 2))
+            win.blit(
+                pause_txt,
+                (PLAY_WIDTH // 2 - pause_txt.get_width() // 2, PLAY_HEIGHT // 2),
+            )
             pygame.display.update()
             continue
 
@@ -478,7 +499,7 @@ def main():
                 change_piece = True
 
         # Tempelkan current_piece ke grid sementara (untuk visual)
-        for (x, y) in convert_shape_format(current_piece):
+        for x, y in convert_shape_format(current_piece):
             if y >= 0:
                 if 0 <= x < GRID_WIDTH and 0 <= y < GRID_HEIGHT:
                     grid[y][x] = current_piece.color
@@ -515,11 +536,17 @@ def game_over(surface, score, font):
     surface.fill(BLACK)
     over_text = font.render("GAME OVER", True, WHITE)
     score_text = font.render(f"Skor: {score}", True, WHITE)
-    info_font = pygame.font.SysFont('consolas', 18)
+    info_font = pygame.font.SysFont("consolas", 18)
     info_text = info_font.render("Tekan Enter untuk keluar", True, WHITE)
-    surface.blit(over_text, (PLAY_WIDTH // 2 - over_text.get_width() // 2, PLAY_HEIGHT // 2 - 40))
-    surface.blit(score_text, (PLAY_WIDTH // 2 - score_text.get_width() // 2, PLAY_HEIGHT // 2))
-    surface.blit(info_text, (PLAY_WIDTH // 2 - info_text.get_width() // 2, PLAY_HEIGHT // 2 + 40))
+    surface.blit(
+        over_text, (PLAY_WIDTH // 2 - over_text.get_width() // 2, PLAY_HEIGHT // 2 - 40)
+    )
+    surface.blit(
+        score_text, (PLAY_WIDTH // 2 - score_text.get_width() // 2, PLAY_HEIGHT // 2)
+    )
+    surface.blit(
+        info_text, (PLAY_WIDTH // 2 - info_text.get_width() // 2, PLAY_HEIGHT // 2 + 40)
+    )
     pygame.display.update()
 
     waiting = True
@@ -528,7 +555,10 @@ def game_over(surface, score, font):
             if event.type == pygame.QUIT:
                 waiting = False
                 return
-            if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_ESCAPE):
+            if event.type == pygame.KEYDOWN and event.key in (
+                pygame.K_RETURN,
+                pygame.K_ESCAPE,
+            ):
                 waiting = False
                 return
 
